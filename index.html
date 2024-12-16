@@ -20,20 +20,73 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        h1 {
+        h1, h2 {
             color: #333;
             text-align: center;
         }
-        p {
-            color: #666;
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        .skill-item {
+            background-color: #e9ecef;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+        .contact-info {
+            text-align: center;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Welcome to Alex's Website</h1>
-        <p>This is a simple website created to demonstrate GitHub workflow.</p>
-        <p>Stay tuned for more content!</p>
+        
+        <div class="section">
+            <h2>About Me</h2>
+            <p>Hello! I'm Alex, a passionate developer who loves creating innovative solutions. I believe in writing clean, efficient code and building user-friendly applications.</p>
+        </div>
+
+        <div class="section">
+            <h2>Projects</h2>
+            <p>Here are some of my recent projects:</p>
+            <ul>
+                <li>Website Development</li>
+                <li>Mobile Applications</li>
+                <li>Data Analysis Tools</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Skills</h2>
+            <div class="skills-list">
+                <span class="skill-item">HTML</span>
+                <span class="skill-item">CSS</span>
+                <span class="skill-item">JavaScript</span>
+                <span class="skill-item">Python</span>
+                <span class="skill-item">Git</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Contact</h2>
+            <div class="contact-info">
+                <p>Email: alex@example.com</p>
+                <p>LinkedIn: linkedin.com/in/alex</p>
+                <p>GitHub: github.com/alex</p>
+            </div>
+        </div>
     </div>
 </body>
 </html>
