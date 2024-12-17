@@ -2,6 +2,7 @@ import time
 from datetime import datetime
 import platform
 import sys
+import argparse
 
 # Determine the hosts file location based on the operating system
 def get_hosts_path():
@@ -72,6 +73,20 @@ class WebsiteBlocker:
             sys.exit(1)
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Website Blocker')
+    parser.add_argument('action', choices=['block', 'unblock', 'status'],
+                       help='Action to perform: block, unblock, or check status')
+    
+    args = parser.parse_args()
     blocker = WebsiteBlocker()
-    blocker.block_websites()  # To block websites
-    # blocker.unblock_websites()  # To unblock websites
+    
+    if args.action == 'block':
+        blocker.block_websites()
+    elif args.action == 'unblock':
+        blocker.unblock_websites()
+    elif args.action == 'status':
+        # Add a new method to check if sites are currently blocked
+        with open(blocker.hosts_path, 'r') as hosts_file:
+            content = hosts_file.read()
+            is_blocked = any(site in content for site in blocker.blocked_sites)
+            print(f"Websites are currently {'blocked' if is_blocked else 'unblocked'}")
