@@ -18,6 +18,8 @@ class WebsiteBlocker:
         self.blocked_sites = [
             "facebook.com",
             "www.youtube.com",
+            "https://www.youtube.com/",
+            "https://www.youtube.com",
             "youtube.com",
             "www.instagram.com",
             "instagram.com",
@@ -44,6 +46,22 @@ class WebsiteBlocker:
             "www.facebook.com",
             "youtube.com",
             "www.youtube.com",
+            "4chan.org",
+            "www.4chan.org",
+            "4chan.net",
+            "www.4chan.net",
+            "4channel.org",
+            "www.4channel.org",
+            "sflix.to",
+            "www.sflix.to",
+            "sflix.to",
+            "www.sflix.to",
+            "netflix.com",
+            "www.netflix.com",
+            "netflix.net",
+            "www.netflix.net",
+            "netflix.net",
+            "www.netflix.net",
         ]  # You can modify this list
 
     def block_websites(self):
