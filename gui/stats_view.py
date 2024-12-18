@@ -10,8 +10,13 @@ class StatsView:
         self.tracker = session_tracker
         self.stats_frame = ttk.Frame(parent)
         self.stats_frame.grid(row=1, column=0, columnspan=3, pady=10)
+        self.current_figure = None
         
     def show_stats(self):
+        # Clear previous figure if it exists
+        if self.current_figure:
+            plt.close(self.current_figure)
+            
         conn = sqlite3.connect(self.tracker.db.db_path)
         c = conn.cursor()
         
@@ -32,20 +37,21 @@ class StatsView:
             
         dates, durations = zip(*results)
         
-        # Clear previous graph if it exists
-        for widget in self.stats_frame.winfo_children():
-            widget.destroy()
-        
         # Create matplotlib figure
-        fig, ax = plt.subplots(figsize=(8, 4))
+        self.current_figure = plt.figure(figsize=(8, 4))
+        ax = self.current_figure.add_subplot(111)
         ax.bar(dates, durations)
         ax.set_title('Productive Time by Day')
         ax.set_xlabel('Date')
         ax.set_ylabel('Minutes')
         
         # Embed in tkinter
-        canvas = FigureCanvasTkAgg(fig, master=self.stats_frame)
+        canvas = FigureCanvasTkAgg(self.current_figure, master=self.stats_frame)
         canvas.draw()
         canvas.get_tk_widget().grid(row=0, column=0)
         
         conn.close()
+        
+    def cleanup(self):
+        if self.current_figure:
+            plt.close(self.current_figure)

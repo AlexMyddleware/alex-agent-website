@@ -12,6 +12,8 @@ class ProductivityApp:
         self.tracker = SessionTracker()
         
         self.setup_gui()
+        # Add cleanup on window close
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         
     def setup_gui(self):
         self.main_frame = ttk.Frame(self.root, padding="10")
@@ -41,3 +43,7 @@ class ProductivityApp:
 
     def show_stats(self):
         self.stats_view.show_stats()
+
+    def on_closing(self):
+        self.stats_view.cleanup()
+        self.root.destroy()
