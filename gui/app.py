@@ -4,12 +4,14 @@ from .stats_view import StatsView
 from .timer_view import TimerView
 from models.session import SessionTracker
 from datetime import datetime
+from models.browser_monitor import FirefoxMonitor
 
 class ProductivityApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Productivity Tracker")
         self.tracker = SessionTracker()
+        self.monitor = FirefoxMonitor()
         
         self.setup_gui()
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -28,6 +30,8 @@ class ProductivityApp:
                   command=self.end_session).grid(row=0, column=1, pady=5)
         ttk.Button(self.main_frame, text="Show Stats",
                   command=self.show_stats).grid(row=0, column=2, pady=5)
+        ttk.Button(self.main_frame, text="Check Blocking Status",
+                  command=self.show_blocking_status).grid(row=0, column=3, pady=5)
 
     def start_session(self):
         self.tracker.start_session()
@@ -49,6 +53,25 @@ class ProductivityApp:
 
     def show_stats(self):
         self.stats_view.show_stats()
+
+    def show_blocking_status(self):
+        status_window = tk.Toplevel(self.root)
+        status_window.title("Website Blocking Status")
+        status_window.geometry("500x600")
+        
+        # Add a text widget to show the report
+        text_widget = tk.Text(status_window, wrap=tk.WORD, padx=10, pady=10)
+        text_widget.pack(fill=tk.BOTH, expand=True)
+        
+        # Add scrollbar
+        scrollbar = ttk.Scrollbar(status_window, orient=tk.VERTICAL, command=text_widget.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        text_widget.configure(yscrollcommand=scrollbar.set)
+        
+        # Get and insert the status report
+        status_report = self.monitor.check_blocking_status()
+        text_widget.insert(tk.END, status_report)
+        text_widget.configure(state='disabled')  # Make it read-only
 
     def on_closing(self):
         self.stats_view.cleanup()
