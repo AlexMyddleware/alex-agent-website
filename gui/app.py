@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from .stats_view import StatsView
 from .timer_view import TimerView
 from models.session import SessionTracker
@@ -12,7 +12,6 @@ class ProductivityApp:
         self.tracker = SessionTracker()
         
         self.setup_gui()
-        # Add cleanup on window close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         
     def setup_gui(self):
@@ -37,9 +36,16 @@ class ProductivityApp:
         self.timer_view.update_timer()
 
     def end_session(self):
-        self.tracker.end_session()
+        attempts = self.tracker.end_session()  # Capture the return value
         self.timer_view.timer_running = False
         self.timer_view.timer_label.config(text="No active session")
+        
+        # Show attempts in a popup if any were detected
+        if attempts:
+            attempt_text = "Blocked site access attempts:\n\n"
+            for url, time in attempts:
+                attempt_text += f"• {url} at {time.strftime('%H:%M:%S')}\n"
+            messagebox.showwarning("Access Attempts Detected", attempt_text)
 
     def show_stats(self):
         self.stats_view.show_stats()
