@@ -1,15 +1,12 @@
 [run]
-source = alex_agent_website
-omit =
-    */tests/*
-    */setup.py
+source = .
+omit = 
+    tests/*
+
 
 [report]
 exclude_lines =
     pragma: no cover
     def __repr__
-    if self.debug:
     raise NotImplementedError
-    if __name__ == '__main__':
-    pass
-    raise ImportError
+    if __name__ == .__main__.:
