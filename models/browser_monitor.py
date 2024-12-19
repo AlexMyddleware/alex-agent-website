@@ -2,10 +2,12 @@ import sqlite3
 import os
 from datetime import datetime
 import platform
+from .hosts_blocker import WebsiteBlocker
 
 class FirefoxMonitor:
     def __init__(self):
         self.firefox_path = self._get_firefox_profile_path()
+        self.hosts_blocker = WebsiteBlocker()
 
         self.blocked_sites = [
             "facebook.com",
@@ -127,7 +129,41 @@ class FirefoxMonitor:
         return attempts 
 
     def block_sites(self):
-        """Block sites in both normal and private browsing"""
+        """Block sites in both Firefox and hosts file"""
+        firefox_success = False
+        try:
+            # Try Firefox blocking first
+            firefox_success = self._block_sites_firefox()
+        except Exception as e:
+            print(f"Firefox blocking failed: {e}")
+
+        if not firefox_success:
+            print("Falling back to hosts-based blocking...")
+            try:
+                self.hosts_blocker.block_websites()
+                return True
+            except Exception as e:
+                print(f"Hosts blocking failed: {e}")
+                return False
+        return True
+
+    def unblock_sites(self):
+        """Unblock sites from both Firefox and hosts file"""
+        # Always try to unblock both methods
+        firefox_success = self._unblock_sites_firefox()
+        hosts_success = False
+        
+        try:
+            self.hosts_blocker.unblock_websites()
+            hosts_success = True
+        except Exception as e:
+            print(f"Hosts unblocking failed: {e}")
+
+        return firefox_success or hosts_success
+
+    # Rename existing block_sites to _block_sites_firefox
+    def _block_sites_firefox(self):
+        """Original Firefox-specific blocking implementation"""
         if not self.firefox_path:
             print("Firefox profile not found")
             return False
@@ -156,8 +192,9 @@ class FirefoxMonitor:
             print(f"Error blocking sites: {e}")
             return False
 
-    def unblock_sites(self):
-        """Unblock all sites in both normal and private browsing"""
+    # Rename existing unblock_sites to _unblock_sites_firefox
+    def _unblock_sites_firefox(self):
+        """Original Firefox-specific unblocking implementation"""
         if not self.firefox_path:
             print("Firefox profile not found")
             return False
