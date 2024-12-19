@@ -1,0 +1,15 @@
+[run]
+source = alex_agent_website
+omit =
+    */tests/*
+    */setup.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if self.debug:
+    raise NotImplementedError
+    if __name__ == '__main__':
+    pass
+    raise ImportError

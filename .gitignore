@@ -3,3 +3,5 @@
 /gui/__pycache__
 /models/__pycache__
 /gui/stats/__pycache__
+/.coverage
+/tests/__pycache__
