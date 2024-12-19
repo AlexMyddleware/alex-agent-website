@@ -20,6 +20,10 @@ class ProductivityApp:
         self.main_frame = ttk.Frame(self.root, padding="10")
         self.main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         
+        # Add status text widget
+        self.status_text = tk.Text(self.main_frame, height=10, width=50)
+        self.status_text.grid(row=1, column=0, columnspan=6, pady=10)
+        
         self.timer_view = TimerView(self.main_frame)
         self.stats_view = StatsView(self.main_frame, self.tracker)
         
@@ -32,6 +36,24 @@ class ProductivityApp:
                   command=self.show_stats).grid(row=0, column=2, pady=5)
         ttk.Button(self.main_frame, text="Check Blocking Status",
                   command=self.show_blocking_status).grid(row=0, column=3, pady=5)
+
+        # Add new buttons for hosts-based blocking
+        self.hosts_block_button = tk.Button(
+            self.main_frame,
+            text="Block Sites (Hosts)",
+            command=self.block_sites_hosts
+        )
+        self.hosts_block_button.grid(row=0, column=4, pady=5)
+
+        self.hosts_unblock_button = tk.Button(
+            self.main_frame,
+            text="Unblock Sites (Hosts)",
+            command=self.unblock_sites_hosts
+        )
+        self.hosts_unblock_button.grid(row=0, column=5, pady=5)
+
+        # Initial status update
+        self.update_status()
 
     def start_session(self):
         self.tracker.start_session()
@@ -72,6 +94,54 @@ class ProductivityApp:
         status_report = self.monitor.check_blocking_status()
         text_widget.insert(tk.END, status_report)
         text_widget.configure(state='disabled')  # Make it read-only
+
+    def show_message(self, title, message):
+        """Show a popup message dialog"""
+        messagebox.showinfo(title, message)
+
+    def block_sites_hosts(self):
+        """Explicitly use hosts-based blocking"""
+        try:
+            self.monitor.hosts_blocker.block_websites()
+            messagebox.showinfo("Success", "Sites blocked using hosts file")
+            self.update_status()
+        except PermissionError:
+            messagebox.showerror(
+                "Administrator Rights Required", 
+                "Please run the application as administrator to modify the hosts file."
+            )
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to block sites: {str(e)}")
+
+    def unblock_sites_hosts(self):
+        """Explicitly use hosts-based unblocking"""
+        try:
+            self.monitor.hosts_blocker.unblock_websites()
+            messagebox.showinfo("Success", "Sites unblocked from hosts file")
+            self.update_status()
+        except PermissionError:
+            messagebox.showerror(
+                "Administrator Rights Required", 
+                "Please run the application as administrator to modify the hosts file."
+            )
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to unblock sites: {str(e)}")
+
+    def update_status(self):
+        # Update to check both Firefox and hosts status
+        firefox_status = self.monitor.check_blocking_status()
+        
+        # Check hosts status
+        with open(self.monitor.hosts_blocker.hosts_path, 'r') as hosts_file:
+            content = hosts_file.read()
+            hosts_blocked = any(site in content for site in self.monitor.hosts_blocker.blocked_sites)
+        
+        status_text = (
+            f"Firefox Blocking:\n{firefox_status}\n\n"
+            f"Hosts File Blocking: {'🚫 Active' if hosts_blocked else '✅ Inactive'}"
+        )
+        self.status_text.delete('1.0', tk.END)
+        self.status_text.insert('1.0', status_text)
 
     def on_closing(self):
         self.stats_view.cleanup()
