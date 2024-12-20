@@ -3,6 +3,8 @@ from models.browser_monitor import FirefoxMonitor
 import os
 from unittest.mock import patch
 from datetime import datetime
+import tempfile
+import sqlite3
 
 def test_firefox_monitor_initialization():
     monitor = FirefoxMonitor()
@@ -117,3 +119,56 @@ def test_firefox_profile_path_windows(mock_platform):
         monitor = FirefoxMonitor()
         # Verify expandvars was called with the correct argument
         mock_expandvars.assert_called_once_with(r"%APPDATA%\Mozilla\Firefox\Profiles")
+
+def test_check_blocked_access_with_visits():
+    monitor = FirefoxMonitor()
+    
+    # Create a temporary SQLite database with test data
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        # Create test database
+        conn = sqlite3.connect(temp_file.name)
+        c = conn.cursor()
+        
+        # Create required tables
+        c.execute('''CREATE TABLE moz_places
+                    (id INTEGER PRIMARY KEY, url TEXT)''')
+        c.execute('''CREATE TABLE moz_historyvisits
+                    (id INTEGER PRIMARY KEY, place_id INTEGER, visit_date INTEGER)''')
+        
+        # Insert test data
+        c.execute("INSERT INTO moz_places (id, url) VALUES (1, 'https://youtube.com')")
+        c.execute("INSERT INTO moz_places (id, url) VALUES (2, 'https://example.com')")
+        
+        # Get current time for comparison
+        start_time = datetime.now()
+        
+        # Add visit records with timestamps slightly after start_time
+        current_time_micro = int(start_time.timestamp() * 1000000) + 1000000  # Add 1 second in microseconds
+        c.execute("INSERT INTO moz_historyvisits (place_id, visit_date) VALUES (1, ?)", 
+                 (current_time_micro,))
+        c.execute("INSERT INTO moz_historyvisits (place_id, visit_date) VALUES (2, ?)", 
+                 (current_time_micro,))
+        
+        conn.commit()
+        conn.close()
+        
+        # Set this as our Firefox profile path
+        monitor.firefox_path = temp_file.name
+        
+        # Run the check
+        attempts = monitor.check_blocked_access(start_time)
+        
+        # Verify results
+        assert isinstance(attempts, list)
+        assert len(attempts) == 1  # Should only find youtube.com as blocked
+        assert 'youtube.com' in attempts[0][0]  # URL is in the first element of each tuple
+        
+        # Make sure all connections are closed before cleanup
+        monitor = None  # Release any references to the database
+        import gc
+        gc.collect()  # Force garbage collection
+        
+        try:
+            os.unlink(temp_file.name)
+        except PermissionError:
+            print("Note: Could not delete temporary file immediately due to Windows file locking")
