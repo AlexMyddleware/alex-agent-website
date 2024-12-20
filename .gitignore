@@ -5,3 +5,4 @@
 /gui/stats/__pycache__
 /.coverage
 /tests/__pycache__
+*-temp

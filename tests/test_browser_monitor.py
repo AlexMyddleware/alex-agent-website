@@ -65,3 +65,55 @@ def test_check_blocked_access_no_profile():
     # Should return empty list when no profile is found
     assert isinstance(result, list)
     assert len(result) == 0
+
+def test_check_blocked_access_profile_not_exists():
+    monitor = FirefoxMonitor()
+    # Set firefox_path to a non-existent path
+    monitor.firefox_path = "/path/that/does/not/exist"
+    
+    start_time = datetime.now()
+    attempts = monitor.check_blocked_access(start_time)
+    
+    # Verify attempts is initialized as an empty list
+    assert isinstance(attempts, list)
+    assert len(attempts) == 0
+
+def test_check_blocked_access_initialize_attempts():
+    monitor = FirefoxMonitor()
+    # Set firefox_path to a path that exists but isn't a valid database
+    # This will make it pass the os.path.exists check but fail later
+    monitor.firefox_path = __file__  # Use the current test file as a path that exists
+    
+    start_time = datetime.now()
+    attempts = monitor.check_blocked_access(start_time)
+    
+    # Verify attempts is initialized as an empty list
+    assert isinstance(attempts, list)
+    assert len(attempts) == 0
+
+@patch('platform.system')
+def test_firefox_profile_path_macos(mock_platform):
+    # Mock platform.system to return "Darwin" (macOS)
+    mock_platform.return_value = "Darwin"
+    
+    # Mock expanduser to return a predictable path
+    with patch('os.path.expanduser') as mock_expanduser:
+        mock_expanduser.return_value = "/Users/testuser/Library/Application Support/Firefox/Profiles"
+        
+        monitor = FirefoxMonitor()
+        # The actual path won't be created since we're mocking os.listdir,
+        # but we can verify that expanduser was called with the correct argument
+        mock_expanduser.assert_called_once_with("~/Library/Application Support/Firefox/Profiles")
+
+@patch('platform.system')
+def test_firefox_profile_path_windows(mock_platform):
+    # Mock platform.system to return "Windows"
+    mock_platform.return_value = "Windows"
+    
+    # Mock expandvars to return a predictable path
+    with patch('os.path.expandvars') as mock_expandvars:
+        mock_expandvars.return_value = r"C:\Users\testuser\AppData\Roaming\Mozilla\Firefox\Profiles"
+        
+        monitor = FirefoxMonitor()
+        # Verify expandvars was called with the correct argument
+        mock_expandvars.assert_called_once_with(r"%APPDATA%\Mozilla\Firefox\Profiles")
