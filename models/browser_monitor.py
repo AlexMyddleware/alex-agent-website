@@ -3,61 +3,14 @@ import os
 from datetime import datetime
 import platform
 from .hosts_blocker import WebsiteBlocker
+from .config.blocked_sites import BLOCKED_SITES
 
 class FirefoxMonitor:
     def __init__(self):
         self.firefox_path = self._get_firefox_profile_path()
         self.hosts_blocker = WebsiteBlocker()
-
-        self.blocked_sites = [
-            "facebook.com",
-            "www.youtube.com",
-            "https://www.youtube.com/",
-            "https://www.youtube.com",
-            "youtube.com",
-            "www.instagram.com",
-            "instagram.com",
-            "www.twitter.com",
-            "twitter.com",
-            "reddit.com",
-            "www.tiktok.com",
-            "tiktok.com",
-            "www.twitch.tv",
-            "twitch.tv",
-            "old.reddit.com",
-            # Reddit variants
-            "www.reddit.com",
-            "old.reddit.com",
-            "new.reddit.com",
-            "np.reddit.com",
-            # Add https and http explicitly
-            "https://reddit.com",
-            "https://www.reddit.com",
-            "http://reddit.com",
-            "http://www.reddit.com",
-            '/r/',
-            # Add your other sites with similar variants
-            "facebook.com",
-            "www.facebook.com",
-            "youtube.com",
-            "www.youtube.com",
-            "4chan.org",
-            "www.4chan.org",
-            "4chan.net",
-            "www.4chan.net",
-            "4channel.org",
-            "www.4channel.org",
-            "sflix.to",
-            "www.sflix.to",
-            "sflix.to",
-            "www.sflix.to",
-            "netflix.com",
-            "www.netflix.com",
-            "netflix.net",
-            "www.netflix.net",
-            "netflix.net",
-            "www.netflix.net",
-        ]  # You can modify this list
+        self.blocked_sites = BLOCKED_SITES
+        
         print(f"Firefox profile path: {self.firefox_path}")
         
     def _get_firefox_profile_path(self):
