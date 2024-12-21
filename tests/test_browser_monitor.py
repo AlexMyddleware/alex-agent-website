@@ -1,7 +1,7 @@
 import pytest
 from models.browser_monitor import FirefoxMonitor
 import os
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 from datetime import datetime
 import tempfile
 import sqlite3
@@ -172,3 +172,21 @@ def test_check_blocked_access_with_visits():
             os.unlink(temp_file.name)
         except PermissionError:
             print("Note: Could not delete temporary file immediately due to Windows file locking")
+
+def test_block_sites_firefox_failure():
+    """Test the block_sites method when Firefox blocking fails and falls back to hosts blocking."""
+    monitor = FirefoxMonitor()
+    
+    # Mock the firefox_blocker to simulate failure
+    with patch.object(monitor.firefox_blocker, 'block_sites', return_value=False):
+        # Mock the hosts_blocker to succeed
+        with patch.object(monitor.hosts_blocker, 'block_websites', return_value=True):
+            # Test the block_sites method
+            result = monitor.block_sites()
+            
+            # Verify that the method returned True (successful fallback)
+            assert result is True
+            
+            # Verify that both methods were called
+            monitor.firefox_blocker.block_sites.assert_called_once()
+            monitor.hosts_blocker.block_websites.assert_called_once()
