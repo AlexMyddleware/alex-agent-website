@@ -190,3 +190,21 @@ def test_block_sites_firefox_failure():
             # Verify that both methods were called
             monitor.firefox_blocker.block_sites.assert_called_once()
             monitor.hosts_blocker.block_websites.assert_called_once()
+
+def test_block_sites_firefox_exception():
+    """Test the block_sites method when Firefox blocking raises an exception."""
+    monitor = FirefoxMonitor()
+    
+    # Mock firefox_blocker to raise an exception
+    with patch.object(monitor.firefox_blocker, 'block_sites', side_effect=Exception("Firefox blocking error")):
+        # Mock hosts_blocker to succeed
+        with patch.object(monitor.hosts_blocker, 'block_websites', return_value=True):
+            # Test the block_sites method
+            result = monitor.block_sites()
+            
+            # Verify that the method returned True (successful fallback)
+            assert result is True
+            
+            # Verify that both methods were called
+            monitor.firefox_blocker.block_sites.assert_called_once()
+            monitor.hosts_blocker.block_websites.assert_called_once()
